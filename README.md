@@ -4,6 +4,8 @@
 
 [![Gem Version](https://badge.fury.io/rb/elbas.svg)](https://badge.fury.io/rb/elbas)
 
+Changes in this fork, since `17ec664`, are listed in [CHANGELOG.md](CHANGELOG.md).
+
 ELBAS was written to ease the deployment of Rails applications to AWS AutoScale
 groups. During your Capistrano deployment, ELBAS will:
 
