@@ -5,6 +5,7 @@ require 'aws-sdk-ec2'
 require 'elbas/version'
 require 'elbas/logger'
 require 'elbas/retryable'
+require 'elbas/server_host'
 
 require 'elbas/errors/no_launch_template'
 
