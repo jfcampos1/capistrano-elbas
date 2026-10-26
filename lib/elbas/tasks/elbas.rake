@@ -1,18 +1,21 @@
 require 'elbas'
 include Elbas::Logger
+include Elbas::ServerHost
 
 namespace :elbas do
   task :ssh do
     include Capistrano::DSL
+    include Elbas::ServerHost
 
     info "SSH commands:"
     env.servers.to_a.each.with_index do |server, i|
-      info "    #{i + 1}) ssh #{fetch(:user)}@#{server.hostname}"
+      info "    #{i + 1}) #{elbas_ssh_command(server)}"
     end
   end
 
   task :deploy do
     include Capistrano::DSL
+    include Elbas::ServerHost
     deploy_servers = env.filter(env.servers).map(&:hostname)
 
     fetch(:aws_autoscale_group_names).each do |aws_autoscale_group_name|
@@ -20,8 +23,7 @@ namespace :elbas do
       asg = Elbas::AWS::AutoscaleGroup.new aws_autoscale_group_name
 
       instances_in_current_deploy = asg.instances.running.select do |instance|
-        hostname = instance.hostname
-        deploy_servers.include?(hostname)        
+        deploy_servers.include?(elbas_server_host(instance))
       end
 
       unless instances_in_current_deploy.any?

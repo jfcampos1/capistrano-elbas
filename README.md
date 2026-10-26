@@ -4,6 +4,8 @@
 
 [![Gem Version](https://badge.fury.io/rb/elbas.svg)](https://badge.fury.io/rb/elbas)
 
+Changes in this fork, since `17ec664`, are listed in [CHANGELOG.md](CHANGELOG.md).
+
 ELBAS was written to ease the deployment of Rails applications to AWS AutoScale
 groups. During your Capistrano deployment, ELBAS will:
 
@@ -50,6 +52,37 @@ autoscale 'worker-autoscale-group', user: 'apps', roles: [:worker]
 ```
 
 Run `cap production deploy`.
+
+### SSH host
+
+By default each server is registered with its public DNS name, and Capistrano
+connects there over SSH. Set `elbas_server_host` to use another address. The
+same value is used when choosing which instance to bake into the AMI.
+
+```ruby
+set :elbas_server_host, :public_dns   # default
+set :elbas_server_host, :public_ip
+set :elbas_server_host, :instance_id  # target for SSH over SSM Session Manager
+```
+
+`:instance_id` does not open the tunnel by itself. Pass an SSH `ProxyCommand`
+in `ssh_options` so Net::SSH substitutes the instance id into `%h`:
+
+```ruby
+set :elbas_server_host, :instance_id
+
+autoscale 'my-autoscale-group', user: 'apps', roles: [:app, :web, :db],
+  ssh_options: {
+    keys: ['~/.ssh/my-key.pem'],
+    verify_host_key: :never,
+    proxy: Net::SSH::Proxy::Command.new(
+      "aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p' --region us-east-1"
+    )
+  }
+```
+
+`cap <stage> elbas:ssh` prints a direct `ssh user@host` for `:public_dns` and
+`:public_ip`, and the same command with that `ProxyCommand` for `:instance_id`.
 
 **As of version 3, your AWS setup must use launch templates as opposed to launch
 configurations.** This allows ELBAS to simply create a new launch template version

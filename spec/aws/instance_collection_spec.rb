@@ -17,6 +17,7 @@ describe Elbas::AWS::InstanceCollection do
         it 'returns Instance objects with name/hostname/state' do
           expect(subject.instances[0].id).to eq 'i-1234567890'
           expect(subject.instances[0].hostname).to eq 'ec2-1234567890.amazonaws.com'
+          expect(subject.instances[0].public_ip).to eq '46.51.219.63'
           expect(subject.instances[0].state).to eq 16
 
           expect(subject.instances[1].id).to eq 'i-500'

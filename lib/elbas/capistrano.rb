@@ -1,4 +1,7 @@
+require 'elbas/server_host'
 require 'capistrano/dsl'
+
+include Elbas::ServerHost
 
 load File.expand_path("../tasks/elbas.rake", __FILE__)
 
@@ -13,13 +16,14 @@ def autoscale(groupname, properties = {})
 
   info "Auto Scaling Group: #{groupname}"
   instances.each.with_index do |instance, i|
-    info "Adding server: #{instance.hostname}"
+    host = elbas_server_host(instance)
+    info "Adding server: #{host}"
 
     props = nil
     props = yield(instance, i) if block_given?
     props ||= properties
 
-    server instance.hostname, props
+    server host, props
   end
 
   if instances.any?
